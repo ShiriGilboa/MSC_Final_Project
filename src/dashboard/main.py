@@ -1,4 +1,13 @@
 import streamlit as st
+
+# Page configuration - MUST be first Streamlit command
+st.set_page_config(
+    page_title="STT Enhancement Evaluation Dashboard",
+    page_icon="🎤",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
@@ -11,14 +20,45 @@ import hashlib
 import sys
 import re
 
-# Add the utils directory to Python path to import utils
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'utils'))
+# Add the src directory to Python path to import utils
+print(f"__file__: {repr(__file__)}")
+
+# More robust path detection
+if __file__ and os.path.exists(__file__):
+    # Use __file__ if it's valid
+    current_file = os.path.abspath(__file__)
+    print(f"Using __file__: {current_file}")
+else:
+    # Fallback: use current working directory
+    current_file = os.path.abspath(os.getcwd())
+    print(f"Using cwd fallback: {current_file}")
+
+# Get the src directory (two levels up from dashboard)
+src_path = os.path.dirname(os.path.dirname(current_file))
+print(f"src_path: {src_path}")
+print(f"src_path exists: {os.path.exists(src_path)}")
+
+if os.path.exists(src_path):
+    sys.path.append(src_path)
+    print(f"Added {src_path} to sys.path")
+    
+    utils_path = os.path.join(src_path, 'utils')
+    print(f"utils_path: {utils_path}")
+    print(f"utils_path exists: {os.path.exists(utils_path)}")
+    
+    if os.path.exists(utils_path):
+        sys.path.append(utils_path)
+        print(f"Added {utils_path} to sys.path")
+    else:
+        print(f"Warning: utils_path does not exist: {utils_path}")
+else:
+    print(f"Warning: src_path does not exist: {src_path}")
 
 try:
-    from text_processing import normalize_text
+    from utils.text_processing import normalize_text
     NORMALIZATION_AVAILABLE = True
 except ImportError as e:
-    st.warning(f"Could not import normalization functions: {e}. Text will be displayed as-is.")
+    st.warning(f"Could not import normalization functions: {e}.")
     NORMALIZATION_AVAILABLE = False
     # Fallback normalize function
     def normalize_text(text: str) -> str:
@@ -93,13 +133,7 @@ def check_password():
     
     return False
 
-# Page configuration
-st.set_page_config(
-    page_title="STT Enhancement Evaluation Dashboard",
-    page_icon="🎤",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
+# Page configuration moved to top of file
 
 # Check authentication before showing the dashboard
 if not check_password():
@@ -285,7 +319,9 @@ def load_data():
     """Load and preprocess the evaluation data"""
     try:
         script_dir = os.path.dirname(os.path.abspath(__file__))
-        csv_path = os.path.join(script_dir, '..', '..', 'data', 'evaluation_results_unified.csv')
+        project_dir = os.path.dirname(os.path.dirname(script_dir))
+        # path = /Users/shirigilboa/msc_final_project/shiri_forked_project/stt_post_process_project/stt_evaluation_project/data/evaluation_results_unified.csv
+        csv_path = os.path.join(project_dir, 'data', 'evaluation_results_unified.csv')
         df = pd.read_csv(csv_path)        
         return df
     except FileNotFoundError as e:
