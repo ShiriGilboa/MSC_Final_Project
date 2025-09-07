@@ -89,7 +89,7 @@ except ImportError as e:
 try:
     DASHBOARD_PASSWORD = st.secrets["STREAMLIT_PASSWORD"]
 except (KeyError, FileNotFoundError):
-    DASHBOARD_PASSWORD = os.getenv("STREAMLIT_PASSWORD", "Yonathan_Shiri_2025")  # Use env var or fallback
+    DASHBOARD_PASSWORD = os.getenv("STREAMLIT_PASSWORD", "Test_Password")  # Use env var or fallback
 
 def check_password():
     """Returns `True` if the user had the correct password."""
